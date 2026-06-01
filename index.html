@@ -618,34 +618,55 @@ function findSimilar(query, evtFilter) {
   }).slice(0,6);
 }
 
-function hideSuggestions(id) {
-  const el = document.getElementById(id); if(el) el.style.display='none';
+function hideSuggestions() {
+  const el = document.getElementById('float-sug');
+  if(el) el.remove();
+}
+
+function renderSuggestBox(matches, inputEl, onPick) {
+  hideSuggestions();
+  if(!matches.length) return;
+  const rect = inputEl.getBoundingClientRect();
+  const box = document.createElement('div');
+  box.id = 'float-sug';
+  box.style.cssText = 'position:fixed;z-index:9999;background:var(--warm-white);border:1px solid var(--blush-dark);border-radius:8px;box-shadow:0 4px 16px rgba(61,37,53,0.15);max-height:200px;overflow-y:auto;';
+  box.style.left = rect.left + 'px';
+  box.style.top = (rect.bottom + 4) + 'px';
+  box.style.width = Math.max(rect.width, 260) + 'px';
+  const evtLabel = e => e==='kina'?'❤️ Kına':'💎 Nikah';
+  matches.forEach(m => {
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#FFF8E8;';
+    item.innerHTML = '<span style="font-weight:500;color:#6A4A10">'+m.name+'</span><span style="font-size:11px;color:var(--text-muted)">'+evtLabel(m.evt)+' · '+m.grp+'</span>';
+    item.addEventListener('mousedown', e => e.preventDefault());
+    item.addEventListener('click', () => { onPick(m.name); hideSuggestions(); });
+    box.appendChild(item);
+  });
+  document.body.appendChild(box);
 }
 
 function showSuggestions(input, evt, gi) {
   const key = evt+'-'+gi;
-  const el = document.getElementById('sug-'+key); if(!el) return;
   const matches = findSimilar(input.value, evt);
-  if(!matches.length) { el.style.display='none'; return; }
-  const evtLabel = e => e==='kina'?'❤️ Kına':'💎 Nikah';
-  el.innerHTML = matches.map(m =>
-    '<div class="suggest-item suggest-warn" onmousedown="event.preventDefault();document.getElementById(\'inp-'+key+'\').value=\''+m.name.replace(/'/g,"\\'")+'\';">' +
-    '<span class="si-name">'+m.name+'</span><span class="si-meta">'+evtLabel(m.evt)+' · '+m.grp+'</span></div>'
-  ).join('');
-  el.style.display='block';
+  renderSuggestBox(matches, input, name => {
+    const el = document.getElementById('inp-'+key);
+    if(el) { el.value = name; el.focus(); }
+  });
 }
 
 function showSuggestionsTracker(input) {
-  const el = document.getElementById('t-sug'); if(!el) return;
   const matches = findSimilar(input.value, null);
-  if(!matches.length) { el.style.display='none'; return; }
-  const evtLabel = e => e==='kina'?'❤️ Kına':'💎 Nikah';
-  el.innerHTML = matches.map(m =>
-    '<div class="suggest-item suggest-warn" onmousedown="event.preventDefault();document.getElementById(\'t-name\').value=\''+m.name.replace(/'/g,"\\'")+'\';">' +
-    '<span class="si-name">'+m.name+'</span><span class="si-meta">'+evtLabel(m.evt)+' · '+m.grp+'</span></div>'
-  ).join('');
-  el.style.display='block';
+  renderSuggestBox(matches, input, name => {
+    const el = document.getElementById('t-name');
+    if(el) { el.value = name; el.focus(); }
+  });
 }
+
+document.addEventListener('click', e => {
+  const box = document.getElementById('float-sug');
+  if(box && !box.contains(e.target)) hideSuggestions();
+});
+
 load().then(() => { renderGroups(); renderStats(); });
 </script>
 </body>
