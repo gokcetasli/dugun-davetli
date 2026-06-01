@@ -491,44 +491,36 @@ function renderStats() {
 
 function renderTracker() {
   const search = document.getElementById('search').value.toLowerCase();
-  const fe = document.getElementById('f-evt').value;
   const fg = document.getElementById('f-grp').value;
   const fs = document.getElementById('f-status').value;
-  const evtMap = { kina:'<span class="badge b-kina">Kına</span>', nikah:'<span class="badge b-nikah">Nikah</span>' };
-  const filtered = guests.filter(g => {
-    if(fe && g.event!==fe) return false;
-    if(fg && g.group!==fg) return false;
-    if(fs && g.status!==fs) return false;
-    if(search && !g.name.toLowerCase().includes(search)) return false;
-    return true;
-  });
-  if(filtered.length===0) { document.getElementById('tracker-table').innerHTML='<div class="empty">Davetli bulunamadı</div>'; return; }
-  let html=`<table><thead><tr>
-    <th>Ad Soyad</th><th>Etkinlik</th><th>Grup</th><th>Davetiye</th><th>Katılım</th><th>Kişi</th><th>Not</th><th></th>
-  </tr></thead><tbody>`;
-  for(const g of filtered) {
-    html+=`<tr>
-      <td style="font-weight:500">${g.name}</td>
-      <td>${evtMap[g.event]||''}</td>
-      <td style="color:var(--text-muted)">${g.group||''}</td>
-      <td><select class="inline-sel" onchange="updateGuest(${g.id},'sent',this.value)">
-        <option value="no" ${g.sent==='no'?'selected':''}>Gönderilmedi</option>
-        <option value="yes" ${g.sent==='yes'?'selected':''}>Gönderildi ✓</option>
-      </select></td>
-      <td><select class="inline-sel" onchange="updateGuest(${g.id},'status',this.value)">
-        <option value="wait" ${g.status==='wait'?'selected':''}>⏳ Bekliyor</option>
-        <option value="yes" ${g.status==='yes'?'selected':''}>✓ Geliyor</option>
-        <option value="no" ${g.status==='no'?'selected':''}>✗ Gelemiyor</option>
-      </select></td>
-      <td><select class="inline-sel" onchange="updateGuest(${g.id},'guestCount',this.value)">
-        ${[1,2,3,4,5].map(n=>`<option value="${n}" ${getGuestCount(g)===n?'selected':''}>${n}${n===5?'+':''}</option>`).join('')}
-      </select></td>
-      <td style="color:var(--text-muted);font-size:12px">${g.note||''}</td>
-      <td><button class="del-btn" onclick="deleteGuest(${g.id})">✕</button></td>
-    </tr>`;
+  const fe = document.getElementById('f-evt').value;
+
+  function makeTable(evtFilter, label) {
+    const filtered = guests.filter(g => {
+      if(g.event !== evtFilter) return false;
+      if(fg && g.group!==fg) return false;
+      if(fs && g.status!==fs) return false;
+      if(search && !g.name.toLowerCase().includes(search)) return false;
+      return true;
+    });
+    let html = `<div style="margin-bottom:28px"><div style="font-size:13px;font-weight:500;color:var(--plum);margin-bottom:10px;font-family:'Playfair Display',serif">${label}</div>`;
+    if(filtered.length===0) { html += `<div class="empty">Henüz davetli yok</div>`; }
+    else {
+      html += `<div class="tbl-wrap"><table><thead><tr><th>Ad Soyad</th><th>Grup</th><th>Davetiye</th><th>Katılım</th><th>Kişi</th><th>Not</th><th></th></tr></thead><tbody>`;
+      for(const g of filtered) {
+        html+=`<tr><td style="font-weight:500">${g.name}</td><td style="color:var(--text-muted)">${g.group||''}</td><td><select class="inline-sel" onchange="updateGuest(${g.id},'sent',this.value)"><option value="no" ${g.sent==='no'?'selected':''}>Gönderilmedi</option><option value="yes" ${g.sent==='yes'?'selected':''}>Gönderildi ✓</option></select></td><td><select class="inline-sel" onchange="updateGuest(${g.id},'status',this.value)"><option value="wait" ${g.status==='wait'?'selected':''}>⏳ Bekliyor</option><option value="yes" ${g.status==='yes'?'selected':''}>✓ Geliyor</option><option value="no" ${g.status==='no'?'selected':''}>✗ Gelemiyor</option></select></td><td><select class="inline-sel" onchange="updateGuest(${g.id},'guestCount',this.value)">${[1,2,3,4,5].map(n=>`<option value="${n}" ${getGuestCount(g)===n?'selected':''}>${n}${n===5?'+':''}</option>`).join('')}</select></td><td style="color:var(--text-muted);font-size:12px">${g.note||''}</td><td><button class="del-btn" onclick="deleteGuest(${g.id})">✕</button></td></tr>`;
+      }
+      html += `</tbody></table></div>`;
+    }
+    html += `</div>`;
+    return html;
   }
-  html+='</tbody></table>';
-  document.getElementById('tracker-table').innerHTML=html;
+
+  let out = '';
+  if(!fe || fe==='kina') out += makeTable('kina', '❤️ Kına — 2 Temmuz');
+  if(!fe || fe==='nikah') out += makeTable('nikah', '💎 Nikah — 4 Temmuz');
+  if(!out.trim()) out = '<div class="empty">Davetli bulunamadı</div>';
+  document.getElementById('tracker-table').innerHTML = out;
 }
 
 function importFromPlanner() {
