@@ -404,7 +404,9 @@ let groups = {
 let guests = [];
 let addGroupEvt = 'kina';
 
-const API = 'https://script.google.com/macros/s/AKfycbykpcqM1Wu4npeRga6mXuo0pvKSsCR_bLoYj9wrtgh1huZoV_b14M0NHR4l8J3qlik/exec';
+const BIN_ID = '6a1d854fddf5aa59f77fd464';
+const MASTER_KEY = '$2a$10$QxuxTJWPlLgwMU.opdOfOO9R4INlxI9jM.Bs/Y8WyLM/gghZkbeYK';
+const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 
 function showSyncStatus(msg, color) {
   let el = document.getElementById('sync-status');
@@ -424,15 +426,16 @@ function showSyncStatus(msg, color) {
 async function load() {
   showSyncStatus('⏳ Yükleniyor...', 'loading');
   try {
-    const [gRes, gsRes] = await Promise.all([
-      fetch(API + '?action=getGroups').then(r=>r.json()),
-      fetch(API + '?action=getGuests').then(r=>r.json())
-    ]);
-    if(gRes.ok && gRes.groups) {
-      if(gRes.groups.kina && gRes.groups.kina.length > 0) groups = gRes.groups;
-      else if(gRes.groups.nikah && gRes.groups.nikah.length > 0) groups = gRes.groups;
+    const res = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': MASTER_KEY }
+    });
+    const data = await res.json();
+    const record = data.record;
+    if(record.groups) {
+      if(record.groups.kina && record.groups.kina.length > 0) groups = record.groups;
+      else if(record.groups.nikah && record.groups.nikah.length > 0) groups = record.groups;
     }
-    if(gsRes.ok && gsRes.guests) guests = gsRes.guests;
+    if(record.guests && record.guests.length > 0) guests = record.guests;
     showSyncStatus('✓ Yüklendi', 'ok');
   } catch(e) {
     showSyncStatus('⚠ Bağlantı hatası', 'err');
@@ -445,10 +448,14 @@ function save() {
   showSyncStatus('⏳ Kaydediliyor...', 'loading');
   saveTimer = setTimeout(async () => {
     try {
-      await Promise.all([
-        fetch(API, { method:'POST', body: JSON.stringify({ action:'saveGroups', groups }) }),
-        fetch(API, { method:'POST', body: JSON.stringify({ action:'saveGuests', guests }) })
-      ]);
+      await fetch(BIN_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': MASTER_KEY
+        },
+        body: JSON.stringify({ groups, guests })
+      });
       showSyncStatus('✓ Kaydedildi', 'ok');
     } catch(e) {
       showSyncStatus('⚠ Kayıt hatası', 'err');
