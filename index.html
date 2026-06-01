@@ -431,11 +431,8 @@ async function load() {
     });
     const data = await res.json();
     const record = data.record;
-    if(record.groups) {
-      if(record.groups.kina && record.groups.kina.length > 0) groups = record.groups;
-      else if(record.groups.nikah && record.groups.nikah.length > 0) groups = record.groups;
-    }
-    if(record.guests && record.guests.length > 0) guests = record.guests;
+    if(record.groups) groups = record.groups;
+    if(record.guests) guests = record.guests;
     showSyncStatus('✓ Yüklendi', 'ok');
   } catch(e) {
     showSyncStatus('⚠ Bağlantı hatası', 'err');
