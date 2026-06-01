@@ -586,8 +586,11 @@ function renderSummary() {
 
 
 function normalize(s) {
-  return s.toLowerCase()
-    .replace(/[çc]/g,'c').replace(/[şs]/g,'s').replace(/[ğg]/g,'g')
+  return s
+    .replace(/İ/g,'i').replace(/I/g,'i').replace(/Ğ/g,'g').replace(/Ş/g,'s')
+    .replace(/Ç/g,'c').replace(/Ö/g,'o').replace(/Ü/g,'u')
+    .toLowerCase()
+    .replace(/[ğg]/g,'g').replace(/[şs]/g,'s').replace(/[çc]/g,'c')
     .replace(/[üu]/g,'u').replace(/[öo]/g,'o').replace(/[ıi]/g,'i')
     .trim();
 }
