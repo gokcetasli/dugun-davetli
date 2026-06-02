@@ -364,7 +364,6 @@ function renderGroups() {
     html += `<div style="margin-bottom:28px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:var(--plum)">${label}</h3>
-        <span style="font-size:12px;color:var(--text-muted)">${total} kişi</span>
       </div>`;
     if(groups[evt].length===0) html += `<div class="empty">Henüz grup yok.</div>`;
     groups[evt].forEach((g, gi) => {
@@ -396,6 +395,7 @@ function renderGroups() {
         </div>
       </div>`;
     });
+    html += `<div style="font-size:13px;color:var(--text-muted);padding:8px 4px;border-top:1px solid var(--border);margin-top:8px">Toplam: <strong>${total} kişi</strong></div>`;
     html += '</div>';
   });
   c.innerHTML = html;
