@@ -360,7 +360,7 @@ function renderGroups() {
   let html = '';
   ['kina','nikah'].forEach(evt => {
     const label = evt==='kina' ? '❤️ Kına — 2 Temmuz' : '💎 Nikah — 4 Temmuz';
-    const total = groups[evt].reduce((s,g)=>s+g.people.length,0);
+    const total = groups[evt].filter(g=>!g.name.includes('Form Yanıtları')).reduce((s,g)=>s+g.people.length,0);
     html += `<div style="margin-bottom:28px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:var(--plum)">${label}</h3>
