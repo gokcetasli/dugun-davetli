@@ -646,7 +646,14 @@ function renderSummary() {
         const match = g.note.match(/—\s*(.+)$/);
         if(match) companions = match[1].trim();
       }
-      groupMap[grp].push({ name: g.name, companions });
+      // Add main person
+      groupMap[grp].push({ name: g.name, companions: '' });
+      // Add companions as separate entries
+      if(companions) {
+        companions.split(',').map(s=>s.trim()).filter(s=>s).forEach(c => {
+          groupMap[grp].push({ name: c, companions: g.name + ' ile' });
+        });
+      }
     });
     return groupMap;
   }
