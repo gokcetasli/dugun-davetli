@@ -640,9 +640,14 @@ function renderSummary() {
     comingGuests.forEach(g => {
       const grp = g.group || 'Diğer';
       if(!groupMap[grp]) groupMap[grp] = [];
-      groupMap[grp].push(g.name);
+      // Extract companions from note (e.g. "2 kişi — Ahmet Yılmaz, Safa Bilgin")
+      let companions = '';
+      if(g.note) {
+        const match = g.note.match(/—\s*(.+)$/);
+        if(match) companions = match[1].trim();
+      }
+      groupMap[grp].push({ name: g.name, companions });
     });
-    // Also add from form yanıtları grup in groups
     return groupMap;
   }
 
@@ -661,7 +666,12 @@ function renderSummary() {
       ghtml = groupKeys.map((grp,gi)=>{
         const uid = 'sg-'+evt+'-'+gi;
         const ppl = groupMap[grp];
-        const people = ppl.map((p,i)=>`<div class="sum-person">${i+1}. ${p}</div>`).join('');
+        const people = ppl.map((p,i)=>{
+          const companionHtml = p.companions
+            ? ` <span style="font-style:italic;font-weight:300;color:var(--text-muted);font-size:12px">(${p.companions} ile)</span>`
+            : '';
+          return `<div class="sum-person">${i+1}. ${p.name}${companionHtml}</div>`;
+        }).join('');
         return `<div class="sum-group">
           <div class="sum-group-name" style="cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none" onclick="toggleSumGroup('${uid}')">
             <span id="arr-${uid}">▸</span>${grp} <span style="font-weight:400">(${ppl.length})</span>
