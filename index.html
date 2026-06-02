@@ -615,36 +615,83 @@ function toggleSumGroup(id) {
 }
 
 function renderSummary() {
-  let html='';
-  ['kina','nikah'].forEach(evt=>{
-    const label = evt==='kina' ? '❤️ Kına — 2 Temmuz' : '💎 Nikah — 4 Temmuz';
-    const total = groups[evt].reduce((s,g)=>s+g.people.length,0);
-    let ghtml = groups[evt].map((g,gi)=>{
-      const uid = 'sg-'+evt+'-'+gi;
-      const people = g.people.length===0
-        ? `<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">Henüz kimse yok</div>`
-        : g.people.map((p,i)=>`<div class="sum-person">${i+1}. ${p}</div>`).join('');
-      return `<div class="sum-group">
-        <div class="sum-group-name" style="cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none" onclick="toggleSumGroup('${uid}')">
-          <span id="arr-${uid}">▸</span>${g.name} <span style="font-weight:400">(${g.people.length})</span>
-        </div>
-        <div id="${uid}" style="display:none">${people}</div>
-      </div>`;
-    }).join('');
-    html+=`<div class="sum-col"><div class="sum-col-title">${label}</div>${ghtml}<div class="sum-total"><span class="sum-total-lbl">Toplam</span><span class="sum-total-num">${total} kişi</span></div></div>`;
-  });
-  document.getElementById('summary-content').innerHTML=html;
+  // Stats from guests (katılım takibi)
   const kTotal=guests.filter(g=>g.event==='kina').reduce((s,g)=>s+getGuestCount(g),0);
   const nTotal=guests.filter(g=>g.event==='nikah').reduce((s,g)=>s+getGuestCount(g),0);
   const kComing=guests.filter(g=>g.event==='kina'&&g.status==='yes').reduce((s,g)=>s+getGuestCount(g),0);
   const nComing=guests.filter(g=>g.event==='nikah'&&g.status==='yes').reduce((s,g)=>s+getGuestCount(g),0);
+  const kWait=guests.filter(g=>g.event==='kina'&&g.status==='wait').length;
+  const nWait=guests.filter(g=>g.event==='nikah'&&g.status==='wait').length;
+  const kNo=guests.filter(g=>g.event==='kina'&&g.status==='no');
+  const nNo=guests.filter(g=>g.event==='nikah'&&g.status==='no');
+
   document.getElementById('summary-stats').innerHTML=`
-    <div class="stats">
-      <div class="stat-card"><div class="stat-num">${kTotal}</div><div class="stat-lbl">Kına toplam</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:#2A5226">${kComing}</div><div class="stat-lbl">Kına geliyor</div></div>
-      <div class="stat-card"><div class="stat-num">${nTotal}</div><div class="stat-lbl">Nikah toplam</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:#2A5226">${nComing}</div><div class="stat-lbl">Nikah geliyor</div></div>
+    <div class="stats" style="margin-bottom:8px">
+      <div class="stat-card"><div class="stat-num">${kComing}</div><div class="stat-lbl">Kına geliyor</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#6A4A10">${kWait}</div><div class="stat-lbl">Kına bekliyor</div></div>
+      <div class="stat-card"><div class="stat-num">${nComing}</div><div class="stat-lbl">Nikah geliyor</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#6A4A10">${nWait}</div><div class="stat-lbl">Nikah bekliyor</div></div>
     </div>`;
+
+  // Gelenler — guests'ten grup bazında
+  function comingByGroup(evt) {
+    const comingGuests = guests.filter(g=>g.event===evt&&g.status==='yes');
+    const groupMap = {};
+    comingGuests.forEach(g => {
+      const grp = g.group || 'Diğer';
+      if(!groupMap[grp]) groupMap[grp] = [];
+      groupMap[grp].push(g.name);
+    });
+    // Also add from form yanıtları grup in groups
+    return groupMap;
+  }
+
+  let html='';
+  ['kina','nikah'].forEach(evt=>{
+    const label = evt==='kina' ? '❤️ Kına — 2 Temmuz' : '💎 Nikah — 4 Temmuz';
+    const comingTotal = evt==='kina' ? kComing : nComing;
+    const noList = evt==='kina' ? kNo : nNo;
+    const groupMap = comingByGroup(evt);
+    const groupKeys = Object.keys(groupMap);
+
+    let ghtml = '';
+    if(groupKeys.length === 0) {
+      ghtml = '<div style="font-size:13px;color:var(--text-muted);font-style:italic;padding:8px 0">Henüz katılım onayı yok</div>';
+    } else {
+      ghtml = groupKeys.map((grp,gi)=>{
+        const uid = 'sg-'+evt+'-'+gi;
+        const ppl = groupMap[grp];
+        const people = ppl.map((p,i)=>`<div class="sum-person">${i+1}. ${p}</div>`).join('');
+        return `<div class="sum-group">
+          <div class="sum-group-name" style="cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none" onclick="toggleSumGroup('${uid}')">
+            <span id="arr-${uid}">▸</span>${grp} <span style="font-weight:400">(${ppl.length})</span>
+          </div>
+          <div id="${uid}" style="display:none">${people}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // Gelemeyenler
+    let noHtml = '';
+    if(noList.length > 0) {
+      const noUid = 'sg-no-'+evt;
+      const noNames = noList.map((g,i)=>`<div class="sum-person" style="color:var(--text-muted)">${i+1}. ${g.name}</div>`).join('');
+      noHtml = `<div class="sum-group" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div class="sum-group-name" style="cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;color:#7A2020" onclick="toggleSumGroup('${noUid}')">
+          <span id="arr-${noUid}">▸</span>✗ Gelemeyenler <span style="font-weight:400">(${noList.length})</span>
+        </div>
+        <div id="${noUid}" style="display:none">${noNames}</div>
+      </div>`;
+    }
+
+    html+=`<div class="sum-col">
+      <div class="sum-col-title">${label}</div>
+      ${ghtml}
+      ${noHtml}
+      <div class="sum-total"><span class="sum-total-lbl">Geliyor</span><span class="sum-total-num">${comingTotal} kişi</span></div>
+    </div>`;
+  });
+  document.getElementById('summary-content').innerHTML=html;
 }
 
 
