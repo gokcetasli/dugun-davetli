@@ -605,14 +605,31 @@ function exportCSV() {
   a.download='davetliler.csv'; a.click();
 }
 
+function toggleSumGroup(id) {
+  const el = document.getElementById(id);
+  const arrow = document.getElementById('arr-'+id);
+  if(!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if(arrow) arrow.textContent = open ? '▸' : '▾';
+}
+
 function renderSummary() {
   let html='';
   ['kina','nikah'].forEach(evt=>{
     const label = evt==='kina' ? '❤️ Kına — 2 Temmuz' : '💎 Nikah — 4 Temmuz';
     const total = groups[evt].reduce((s,g)=>s+g.people.length,0);
-    let ghtml = groups[evt].map(g=>{
-      if(g.people.length===0) return `<div class="sum-group"><div class="sum-group-name">${g.name}</div><div style="font-size:12px;color:var(--text-muted);font-style:italic">Henüz kimse yok</div></div>`;
-      return `<div class="sum-group"><div class="sum-group-name">${g.name} (${g.people.length})</div>${g.people.map((p,i)=>`<div class="sum-person">${i+1}. ${p}</div>`).join('')}</div>`;
+    let ghtml = groups[evt].map((g,gi)=>{
+      const uid = 'sg-'+evt+'-'+gi;
+      const people = g.people.length===0
+        ? `<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">Henüz kimse yok</div>`
+        : g.people.map((p,i)=>`<div class="sum-person">${i+1}. ${p}</div>`).join('');
+      return `<div class="sum-group">
+        <div class="sum-group-name" style="cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none" onclick="toggleSumGroup('${uid}')">
+          <span id="arr-${uid}">▸</span>${g.name} <span style="font-weight:400">(${g.people.length})</span>
+        </div>
+        <div id="${uid}" style="display:none">${people}</div>
+      </div>`;
     }).join('');
     html+=`<div class="sum-col"><div class="sum-col-title">${label}</div>${ghtml}<div class="sum-total"><span class="sum-total-lbl">Toplam</span><span class="sum-total-num">${total} kişi</span></div></div>`;
   });
