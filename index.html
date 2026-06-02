@@ -651,7 +651,7 @@ function renderSummary() {
       // Add companions as separate entries
       if(companions) {
         companions.split(',').map(s=>s.trim()).filter(s=>s).forEach(c => {
-          groupMap[grp].push({ name: c, companions: g.name + ' ile' });
+          groupMap[grp].push({ name: c, companions: g.name });
         });
       }
     });
