@@ -811,10 +811,11 @@ function toggleInvited(evt, gi, pi) {
   const key = evt+'-'+gi+'-'+pi;
   invitedMap[key] = !invitedMap[key];
   save();
-  renderGroups();
-  // Keep card open
-  openCards[evt+'-'+gi] = true;
-  setTimeout(()=>{ const e=document.getElementById('inp-'+evt+'-'+gi); if(e) e.focus(); }, 30);
+  // Update just this row without re-rendering everything
+  const item = document.getElementById('pi-'+evt+'-'+gi+'-'+pi);
+  const btn = item && item.querySelector('.person-check');
+  if(item) item.classList.toggle('checked', !!invitedMap[key]);
+  if(btn) btn.classList.toggle('checked', !!invitedMap[key]);
 }
 
 load().then(() => { renderGroups(); renderStats(); });
