@@ -75,9 +75,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 .person-del:hover { background: #FAEBEB; color: #A32D2D; }
 .person-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; transition: all 0.15s; color: transparent; }
 .person-check:hover { border-color: var(--blush-dark); }
-.person-check.checked { background: var(--sage-light); border-color: var(--sage); color: #2A5226; }
-.person-item.checked .person-name { color: var(--text-muted); }
-.person-item.checked .person-num { color: var(--border); }
+.person-check.checked { background: #C5B8E8; border-color: #9B8AC4; color: #3D2D6E; }
+.person-item.checked { background: #F0ECFA; border-radius: 6px; padding-left: 6px; padding-right: 6px; }
+.person-item.checked .person-name { color: var(--text); }
+.person-item.checked .person-num { color: var(--text-muted); }
+.invite-col-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
 .person-empty { font-size: 13px; color: var(--text-muted); font-style: italic; padding: 4px 0; }
 
 /* ADD PERSON */
@@ -382,7 +384,7 @@ function renderGroups() {
         `<div class="person-item${(invitedMap[evt+'-'+gi+'-'+pi])?" checked":""}" id="pi-${evt}-${gi}-${pi}">
           <span class="person-num">${pi+1}.</span>
           <span class="person-name">${p}</span>
-          <button class="person-check${(invitedMap[evt+'-'+gi+'-'+pi])?' checked':''}" onclick="toggleInvited('${evt}',${gi},${pi})" title="Davetiye gönderildi">✓</button>
+          <button class="person-check${(invitedMap[evt+'-'+gi+'-'+pi])?' checked':''}" onclick="toggleInvited('${evt}',${gi},${pi})" title="Davet gönderildi" style="display:flex;align-items:center;gap:3px;width:auto;padding:2px 8px;font-size:11px;"><span>✓</span><span style="font-size:10px;font-weight:500;letter-spacing:0.03em">Davet</span></button>
           <button class="person-del" onclick="removePerson('${evt}',${gi},${pi})">✕</button>
         </div>`).join('') || `<div class="person-empty">Henüz kimse eklenmedi</div>`;
       html += `<div class="card${isOpen?'':' card-collapsed'}" id="cd-${key}">
@@ -395,7 +397,7 @@ function renderGroups() {
           <button onclick="event.stopPropagation();removeGroup('${evt}',${gi})" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:13px;padding:4px 8px;border-radius:6px">✕</button>
         </div>
         <div class="card-body" id="cb-${key}" style="display:${isOpen?'block':'none'}">
-          <div class="person-list">${items}</div>
+      <div class="person-list">${items}</div>
           <div class="add-person suggest-box">
             <input type="text" id="inp-${key}" placeholder="İsim ekle..." onkeydown="if(event.key==='Enter'){addPerson('${evt}',${gi});event.preventDefault();}" oninput="showSuggestions(this,'${evt}',${gi})" onblur="setTimeout(()=>hideSuggestions('${key}'),200)" autocomplete="off" /><div class="suggest-list" id="sug-${key}" style="display:none"></div>
             <button class="btn-sm" onclick="addPerson('${evt}',${gi})">Ekle</button>
