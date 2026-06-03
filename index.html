@@ -73,6 +73,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 .person-name { flex: 1; font-size: 14px; }
 .person-del { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px 6px; border-radius: 4px; }
 .person-del:hover { background: #FAEBEB; color: #A32D2D; }
+.person-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; transition: all 0.15s; color: transparent; }
+.person-check:hover { border-color: var(--blush-dark); }
+.person-check.checked { background: var(--sage-light); border-color: var(--sage); color: #2A5226; }
+.person-item.checked .person-name { color: var(--text-muted); }
+.person-item.checked .person-num { color: var(--border); }
 .person-empty { font-size: 13px; color: var(--text-muted); font-style: italic; padding: 4px 0; }
 
 /* ADD PERSON */
@@ -286,6 +291,7 @@ let groups = {
 };
 let guests = [];
 let addGroupEvt = 'kina';
+let invitedMap = {};
 let openCards = {};
 
 const BIN_ID = '6a1d854fddf5aa59f77fd464';
@@ -310,6 +316,7 @@ async function load() {
     const record = data.record;
     if(record.groups) groups = record.groups;
     if(record.guests) guests = record.guests;
+    if(record.invited) invitedMap = record.invited;
     showSyncStatus('✓ Yüklendi', 'ok');
   } catch(e) { showSyncStatus('⚠ Bağlantı hatası', 'err'); }
 }
@@ -320,7 +327,7 @@ function save() {
   showSyncStatus('⏳ Kaydediliyor...', 'loading');
   saveTimer = setTimeout(async () => {
     try {
-      await fetch(BIN_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ groups, guests }) });
+      await fetch(BIN_URL, { method:'PUT', headers:{ 'Content-Type':'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify({ groups, guests, invited: invitedMap }) });
       showSyncStatus('✓ Kaydedildi', 'ok');
     } catch(e) { showSyncStatus('⚠ Kayıt hatası', 'err'); }
   }, 800);
@@ -372,9 +379,10 @@ function renderGroups() {
       if(openCards[key]===undefined) openCards[key] = false;
       const isOpen = openCards[key];
       const items = g.people.map((p,pi) =>
-        `<div class="person-item">
+        `<div class="person-item${(invitedMap[evt+'-'+gi+'-'+pi])?" checked":""}" id="pi-${evt}-${gi}-${pi}">
           <span class="person-num">${pi+1}.</span>
           <span class="person-name">${p}</span>
+          <button class="person-check${(invitedMap[evt+'-'+gi+'-'+pi])?' checked':''}" onclick="toggleInvited('${evt}',${gi},${pi})" title="Davetiye gönderildi">✓</button>
           <button class="person-del" onclick="removePerson('${evt}',${gi},${pi})">✕</button>
         </div>`).join('') || `<div class="person-empty">Henüz kimse eklenmedi</div>`;
       html += `<div class="card${isOpen?'':' card-collapsed'}" id="cd-${key}">
@@ -796,6 +804,16 @@ document.addEventListener('click', e => {
   const box = document.getElementById('float-sug');
   if(box && !box.contains(e.target)) hideSuggestions();
 });
+
+function toggleInvited(evt, gi, pi) {
+  const key = evt+'-'+gi+'-'+pi;
+  invitedMap[key] = !invitedMap[key];
+  save();
+  renderGroups();
+  // Keep card open
+  openCards[evt+'-'+gi] = true;
+  setTimeout(()=>{ const e=document.getElementById('inp-'+evt+'-'+gi); if(e) e.focus(); }, 30);
+}
 
 load().then(() => { renderGroups(); renderStats(); });
 </script>
