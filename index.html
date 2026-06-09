@@ -243,7 +243,8 @@ select.inline-sel { border: none; background: transparent; font-family: 'DM Sans
         <div class="form-field"><label>Kişi sayısı</label>
           <select id="t-count">
             <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-            <option value="4">4</option><option value="5">5+</option>
+            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+            <option value="7">7</option>
           </select>
         </div>
         <div class="form-field"><label>Not</label><input type="text" id="t-note" placeholder="Opsiyonel..." /></div>
@@ -575,7 +576,7 @@ function renderTracker() {
     else {
       html += `<div class="tbl-wrap"><table><thead><tr><th>Ad Soyad</th><th>Grup</th><th>Davetiye</th><th>Katılım</th><th>Kişi</th><th>Not</th><th></th></tr></thead><tbody>`;
       for(const g of filtered) {
-        html+=`<tr><td style="font-weight:500">${g.name}</td><td style="color:var(--text-muted)">${g.group||''}</td><td><select class="inline-sel" onchange="updateGuest(${g.id},'sent',this.value)"><option value="no" ${g.sent==='no'?'selected':''}>Gönderilmedi</option><option value="yes" ${g.sent==='yes'?'selected':''}>Gönderildi ✓</option></select></td><td><select class="inline-sel" onchange="updateGuest(${g.id},'status',this.value)"><option value="wait" ${g.status==='wait'?'selected':''}>⏳ Bekliyor</option><option value="yes" ${g.status==='yes'?'selected':''}>✓ Geliyor</option><option value="no" ${g.status==='no'?'selected':''}>✗ Gelemiyor</option></select></td><td><select class="inline-sel" onchange="updateGuest(${g.id},'guestCount',this.value)">${[1,2,3,4,5].map(n=>`<option value="${n}" ${getGuestCount(g)===n?'selected':''}>${n}${n===5?'+':''}</option>`).join('')}</select></td><td style="color:var(--text-muted);font-size:12px">${g.note||''}</td><td><button class="del-btn" onclick="deleteGuest(${g.id})">✕</button></td></tr>`;
+        html+=`<tr><td style="font-weight:500">${g.name}</td><td style="color:var(--text-muted)">${g.group||''}</td><td><select class="inline-sel" onchange="updateGuest(${g.id},'sent',this.value)"><option value="no" ${g.sent==='no'?'selected':''}>Gönderilmedi</option><option value="yes" ${g.sent==='yes'?'selected':''}>Gönderildi ✓</option></select></td><td><select class="inline-sel" onchange="updateGuest(${g.id},'status',this.value)"><option value="wait" ${g.status==='wait'?'selected':''}>⏳ Bekliyor</option><option value="yes" ${g.status==='yes'?'selected':''}>✓ Geliyor</option><option value="no" ${g.status==='no'?'selected':''}>✗ Gelemiyor</option></select></td><td><select class="inline-sel" onchange="updateGuest(${g.id},'guestCount',this.value)">${[1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${getGuestCount(g)===n?'selected':''}>${n}</option>`).join('')}</select></td><td style="color:var(--text-muted);font-size:12px">${g.note||''}</td><td><button class="del-btn" onclick="deleteGuest(${g.id})">✕</button></td></tr>`;
       }
       html += `</tbody></table></div>`;
     }
